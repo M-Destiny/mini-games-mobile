@@ -314,12 +314,30 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     setDrawPoints([]);
   }, []);
 
+  const sendMessage = useCallback((message: string) => {
+    const msg: Message = {
+      id: Date.now().toString(),
+      playerId: currentPlayerId || '',
+      playerName: currentPlayer?.name || '',
+      message,
+      isCorrect: false,
+    };
+    setMessages(prev => [...prev, msg]);
+  }, [currentPlayerId, currentPlayer]);
+
+  const clearCanvas = useCallback(() => {
+    if (!room) return;
+    socketRef.current?.emit('clear-canvas', { roomId: room.id });
+    setDrawPoints([]);
+  }, [room]);
+
   return (
     <SocketContext.Provider value={{
       socket: socketRef.current,
       isConnected,
       room,
       players,
+      currentPlayer,
       currentPlayerId,
       messages,
       currentWord,
@@ -339,7 +357,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       sendHangmanGuess,
       sendDraw,
       sendGuess,
+      sendMessage,
       clearDrawPoints,
+      clearCanvas,
     }}>
       {children}
     </SocketContext.Provider>
